@@ -1,9 +1,6 @@
 name: 'Run Rector PHP'
 description: 'Run Rector PHP on your project to detect and fix bugs'
 author: 'Emerson Carvalho'
-branding:
-  icon: 'check-square'
-  color: 'green'
 
 inputs:
   php-version:
