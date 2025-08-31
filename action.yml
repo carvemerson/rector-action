@@ -5,15 +5,19 @@ author: 'Emerson Carvalho'
 inputs:
   php-version:
     description: 'PHP version used to run Rector'
+    required: false
     default: '8.3'
   working-directory:
     description: 'Directory containing composer.json and rector.php'
+    required: false
     default: '.'
   rector-args:
     description: 'Extra arguments passed to Rector (e.g., --no-diffs)'
+    required: false
     default: '--dry-run --ansi'
   composer-options:
     description: 'Extra options for composer install (e.g., --no-scripts)'
+    required: false
     default: ''
   continue-on-error:
     description: 'Whether to continue on error'
