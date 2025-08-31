@@ -1,0 +1,65 @@
+name: 'Run Rector PHP'
+description: 'Run Rector PHP on your project to detect and fix bugs'
+author: 'Emerson Carvalho'
+branding:
+  icon: 'check-square'
+  color: 'green'
+
+inputs:
+  php-version:
+    description: 'PHP version used to run Rector'
+    default: '8.3'
+  working-directory:
+    description: 'Directory containing composer.json and rector.php'
+    default: '.'
+  rector-args:
+    description: 'Extra arguments passed to Rector (e.g., --no-diffs)'
+    default: '--dry-run --ansi'
+  composer-options:
+    description: 'Extra options for composer install (e.g., --no-scripts)'
+    default: ''
+  continue-on-error:
+    description: 'Whether to continue on error'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        tools: composer:v2
+        coverage: none
+        ini-values: memory_limit=-1
+
+    # Fast Composer install with automatic caching
+    - name: Install Composer dependencies (with cache)
+      uses: ramsey/composer-install@v3
+      with:
+        working-directory: ${{ inputs.working-directory }}
+        composer-options: ${{ inputs.composer-options }}
+
+    # Cache Rector cache to speed up subsequent runs
+    - name: Cache Rector cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.working-directory }}/.rector-cache
+        key: ${{ runner.os }}-rector-${{ hashFiles(format('{0}/rector.php', inputs.working-directory), format('{0}/composer.lock', inputs.working-directory)) }}
+        restore-keys: |
+          ${{ runner.os }}-rector-
+
+    - name: Show Rector version
+      run: vendor/bin/rector --version
+      shell: bash
+
+    - name: Run Rector (check mode)
+      continue-on-error: ${{ inputs.continue-on-error }}
+      run: vendor/bin/rector ${{ inputs.rector-args }}
+      shell: bash
